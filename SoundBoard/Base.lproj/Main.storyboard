@@ -35,17 +35,34 @@
                                     <constraint firstAttribute="width" constant="50" id="jM3-Nd-GJf"/>
                                 </constraints>
                             </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Odr-hn-WGG">
+                                <rect key="frame" x="270" y="535" width="61" height="40"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="61" id="1Of-Mx-tYZ"/>
+                                    <constraint firstAttribute="height" constant="40" id="veo-KY-T3O"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
+                                <state key="normal" title="Help">
+                                    <color key="titleColor" name="alternateSelectedControlTextColor" catalog="System" colorSpace="catalog"/>
+                                </state>
+                                <connections>
+                                    <action selector="helpPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ymh-JL-5Zr"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.10915330408534224" green="0.15514076993306317" blue="0.20839159882703073" alpha="1" colorSpace="calibratedRGB"/>
                         <constraints>
                             <constraint firstItem="jvO-Yn-uuX" firstAttribute="leading" secondItem="IgZ-cc-cBA" secondAttribute="trailing" constant="8" id="03f-tx-qVI"/>
                             <constraint firstItem="jvO-Yn-uuX" firstAttribute="centerY" secondItem="IgZ-cc-cBA" secondAttribute="centerY" id="Avo-Ph-Wrc"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="IgZ-cc-cBA" secondAttribute="bottom" constant="20" id="CcX-dD-Er1"/>
+                            <constraint firstItem="Odr-hn-WGG" firstAttribute="centerY" secondItem="jvO-Yn-uuX" secondAttribute="centerY" id="FJS-c2-h54"/>
+                            <constraint firstItem="Odr-hn-WGG" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="W9R-S0-Y6u"/>
                             <constraint firstItem="IgZ-cc-cBA" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="c0j-yx-mL7"/>
                         </constraints>
                     </view>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <connections>
+                        <outlet property="helpButton" destination="Odr-hn-WGG" id="0Ai-ax-sP6"/>
                         <outlet property="miniIcon" destination="IgZ-cc-cBA" id="2ha-ha-jjj"/>
                     </connections>
                 </viewController>

@@ -46,6 +46,11 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
     
     //Device is muted
     var muted:Bool = false
+    var muteValue:Float = 1.0 //not muted
+    
+    //help button
+    @IBOutlet weak var helpButton: UIButton!
+    var helpView:UIButton!
     
     //dictionary of button related objects for easy retrieval
     var samplesDict = [String:AVAudioPlayer]()          //dictionary of audio sample buffers
@@ -120,6 +125,9 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
         //start timer for meter monitoring
         timer = NSTimer.scheduledTimerWithTimeInterval(0.05, target: self, selector: "updateContinousAnimations", userInfo: nil, repeats: true)
         
+        //Create help overlay
+        makeHelpView()
+        
         //load last saved preset
         loadPreset()
         
@@ -134,11 +142,13 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
 //MARK: Make View Components
 //////////////////////////////////////////
     
+    var width:CGFloat = 0
+    var height:CGFloat = 0
     //Make all sample buttons
     func makeButtons(){
         
-        let width = self.view.frame.width/cols - 40.0
-        let height = self.view.frame.height/rows - 35.0
+        width = self.view.frame.width/cols - 40.0
+        height = self.view.frame.height/rows - 35.0
         
         var tagCnt = 0
         for r in 0..<Int(rows){
@@ -210,7 +220,9 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
         muteButton = UIButton(frame: CGRectMake(1024-90, 30, 70, 70))
         muteButton.layer.cornerRadius = 10
         muteButton.backgroundColor = FlatUIColor.pomegranateColor(0.3)
+        muteButton.setTitleColor(FlatUIColor.cloudsColor(0.3), forState: UIControlState.Normal)
         muteButton.setTitle("mute", forState: UIControlState.Normal)
+        muteButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         muteButton.addTarget(self, action: "mutePressed:", forControlEvents: UIControlEvents.TouchDown)
         self.view.addSubview(muteButton)
     }
@@ -236,6 +248,7 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
     }
     
     //Create the VUMeters view
+    var meter:UIView!
     func makeVUMeters(){
         let distortedNum = Double(numLeds) * distortedRange
         let warningNum = Double(numLeds) * warningRange
@@ -246,7 +259,7 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
         let w:CGFloat = 1024/2
         let h:CGFloat = 50
         let rect = CGRectMake(x,y,w,h)
-        let meter = UIView(frame: rect)
+        meter = UIView(frame: rect)
         
         //create leds
         for i in 0..<numLeds{
@@ -284,6 +297,239 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
         meter.transform = CGAffineTransformMakeRotation(CGFloat(-M_PI_2))
         meter.backgroundColor = UIColor.clearColor()
         self.view.addSubview(meter)
+    }
+    
+    func makeHelpView(){
+        helpButton.setTitleColor(FlatUIColor.cloudsColor(0.7), forState: UIControlState.Normal)
+        helpButton.layer.cornerRadius = 10
+        helpButton.backgroundColor = FlatUIColor.pomegranateColor(0.6)
+        helpView = UIButton(frame: CGRectMake(0, 0, self.view.frame.width-100, self.view.frame.height))
+        helpView.backgroundColor = FlatUIColor.midnightblueColor()
+        helpView.addTarget(self, action: "removeHelp:", forControlEvents: UIControlEvents.TouchDown)
+        
+        var x = (width + 10) * CGFloat(0) + 20
+        var y = (height + 10) * CGFloat(0) + 30
+        let performanceLabel = UILabel(frame: CGRectMake(x, y, width*3, height/2))
+        performanceLabel.textColor = UIColor.whiteColor()
+        performanceLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 46)
+        performanceLabel.textAlignment = NSTextAlignment.Left
+        performanceLabel.text = "Performance Mode"
+        helpView.addSubview(performanceLabel)
+        
+        x = (width + 10) * CGFloat(3) + 20
+        y = (height + 10) * CGFloat(0) + 30
+        let muteLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        muteLabel.textColor = UIColor.whiteColor()
+        muteLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        muteLabel.textAlignment = NSTextAlignment.Right
+        muteLabel.text = "Mute all sound."
+        helpView.addSubview(muteLabel)
+        
+        x = (width + 10) * CGFloat(3) + 20
+        y = (height + 10) * CGFloat(4) + 15
+        let editModeLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        editModeLabel.textColor = UIColor.whiteColor()
+        editModeLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        editModeLabel.textAlignment = NSTextAlignment.Right
+        editModeLabel.text = "Edit Mode"
+        helpView.addSubview(editModeLabel)
+        
+        x = (width + 10) * CGFloat(3) + 20
+        y = (height + 10) * CGFloat(3) + 30
+        let masterVolLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        masterVolLabel.textColor = UIColor.whiteColor()
+        masterVolLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        masterVolLabel.textAlignment = NSTextAlignment.Right
+        masterVolLabel.text = "Master Volume"
+        helpView.addSubview(masterVolLabel)
+        
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(0.5) + 30
+        let emptyLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        emptyLabel.textColor = UIColor.whiteColor()
+        emptyLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        emptyLabel.textAlignment = NSTextAlignment.Center
+        emptyLabel.text = "Empty Button"
+        helpView.addSubview(emptyLabel)
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(1) + 30
+        let sampleEmptyButton:UIButton = UIButton(frame: CGRectMake(x, y, width, height))
+        sampleEmptyButton.backgroundColor = FlatUIColor.belizeholeColor(0.3)
+        sampleEmptyButton.layer.cornerRadius = 10
+        helpView.addSubview(sampleEmptyButton)
+        
+        
+        x = (width + 10) * CGFloat(1) + 20
+        y = (height + 10) * CGFloat(0.5) + 30
+        let loadedLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        loadedLabel.textColor = UIColor.whiteColor()
+        loadedLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        loadedLabel.textAlignment = NSTextAlignment.Center
+        loadedLabel.text = "Sample Loaded"
+        helpView.addSubview(loadedLabel)
+        
+        x = (width + 10) * CGFloat(1) + 20
+        y = (height + 10) * CGFloat(1) + 30
+        let sampleLoadedButton:UIButton = UIButton(frame: CGRectMake(x, y, width, height))
+        sampleLoadedButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        sampleLoadedButton.backgroundColor = FlatUIColor.nephritisColor(0.3)
+        sampleLoadedButton.layer.cornerRadius = 10
+        sampleLoadedButton.setTitle("Sample.wav", forState: UIControlState.Normal)
+        helpView.addSubview(sampleLoadedButton)
+
+        x = (width + 10) * CGFloat(2) + 20
+        y = (height + 10) * CGFloat(0.5) + 30
+        let playLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        playLabel.textColor = UIColor.whiteColor()
+        playLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        playLabel.textAlignment = NSTextAlignment.Center
+        playLabel.text = "Tap to play."
+        helpView.addSubview(playLabel)
+        
+        x = (width + 10) * CGFloat(2) + 20
+        y = (height + 10) * CGFloat(1) + 30
+        let tapToPlayButton:UIButton = UIButton(frame: CGRectMake(x, y, width, height))
+        tapToPlayButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        tapToPlayButton.backgroundColor = FlatUIColor.nephritisColor()
+        tapToPlayButton.layer.cornerRadius = 10
+        tapToPlayButton.setTitle("Sample.wav", forState: UIControlState.Normal)
+        helpView.addSubview(tapToPlayButton)
+
+        x = (width + 10) * CGFloat(3) + 20
+        y = (height + 10) * CGFloat(0.5) + 30
+        let loopLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        loopLabel.textColor = UIColor.whiteColor()
+        loopLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        loopLabel.textAlignment = NSTextAlignment.Center
+        loopLabel.text = "Long tap to loop."
+        helpView.addSubview(loopLabel)
+        
+        x = (width + 10) * CGFloat(3) + 20
+        y = (height + 10) * CGFloat(1) + 30
+        let tapHoldToLoopButton:UIButton = UIButton(frame: CGRectMake(x, y, width, height))
+        tapHoldToLoopButton.backgroundColor = FlatUIColor.sunflowerColor()
+        tapHoldToLoopButton.layer.cornerRadius = 10
+        tapHoldToLoopButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        tapHoldToLoopButton.setTitle("Loop.wav", forState: UIControlState.Normal)
+        helpView.addSubview(tapHoldToLoopButton)
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(2) + 30
+        let editLabel = UILabel(frame: CGRectMake(x, y, width*2, height/2))
+        editLabel.textColor = UIColor.whiteColor()
+        editLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 46)
+        editLabel.textAlignment = NSTextAlignment.Left
+        editLabel.text = "Edit Mode"
+        helpView.addSubview(editLabel)
+        
+        let vertShift:CGFloat = 50
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(3) + 30 - vertShift
+        let editButton:UIButton = UIButton(frame: CGRectMake(x, y, width, height))
+        editButton.backgroundColor = FlatUIColor.nephritisColor(0.3)
+        editButton.layer.cornerRadius = 10
+        editButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        editButton.setTitle("Sample.wav", forState: UIControlState.Normal)
+        helpView.addSubview(editButton)
+        let tempSlider:UISlider = UISlider(frame: CGRectMake(x + 10, y + height-40, width-20, 30))
+        tempSlider.minimumValue = 0.001
+        tempSlider.maximumValue = 1.2
+        tempSlider.value = 0.6
+        tempSlider.minimumTrackTintColor = FlatUIColor.peterriverColor()
+        helpView.addSubview(tempSlider)
+        let tempSwitch:UISwitch = UISwitch()
+        tempSwitch.frame = CGRectMake(x + width/2 - tempSwitch.frame.width/2, y + 30, width-20, 30)
+        tempSwitch.onTintColor = FlatUIColor.emerlandColor()
+        helpView.addSubview(tempSwitch)
+        let tempCloseButton:UIButton = UIButton(frame: CGRectMake(x + width-30, y + 10, 20, 20))
+        tempCloseButton.backgroundColor = FlatUIColor.alizarinColor()
+        tempCloseButton.layer.cornerRadius = 10
+        helpView.addSubview(tempCloseButton)
+        
+        
+        x = (width + 10) * CGFloat(1) + 20
+        y = (height + 10) * CGFloat(2.6) + 30 - vertShift
+        let clearLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        clearLabel.textColor = FlatUIColor.alizarinColor()
+        clearLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        clearLabel.textAlignment = NSTextAlignment.Left
+        clearLabel.text = "Clear Sample"
+        helpView.addSubview(clearLabel)
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(3.85) + 30 - vertShift
+        let volumeLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        volumeLabel.textColor = FlatUIColor.peterriverColor()
+        volumeLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        volumeLabel.textAlignment = NSTextAlignment.Center
+        volumeLabel.text = "Adjust Volume"
+        helpView.addSubview(volumeLabel)
+        
+        x = (width + 10) * CGFloat(1) + 20
+        y = (height + 10) * CGFloat(3) + 30 - vertShift
+        let stopModeLabel = UILabel(frame: CGRectMake(x, y, width, height))
+        stopModeLabel.textColor = FlatUIColor.emerlandColor()
+        stopModeLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        stopModeLabel.textAlignment = NSTextAlignment.Left
+        stopModeLabel.text = "Switch for kill mode.\nOFF: Retrigger samples. Wait for loops finish.\nON: Stop sample."
+        stopModeLabel.numberOfLines = 5
+        helpView.addSubview(stopModeLabel)
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(2.6) + 30 - vertShift
+        let editLoadLabel = UILabel(frame: CGRectMake(x, y, width, height/2))
+        editLoadLabel.textColor = UIColor.whiteColor()
+        editLoadLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 24)
+        editLoadLabel.textAlignment = NSTextAlignment.Left
+        editLoadLabel.text = "Tap pad to load."
+        helpView.addSubview(editLoadLabel)
+        
+        
+        x = (width + 10) * CGFloat(2) + 60
+        y = (height + 10) * CGFloat(2) + 30
+        let addSamplesLabel = UILabel(frame: CGRectMake(x, y, width*2, height/2))
+        addSamplesLabel.textColor = UIColor.whiteColor()
+        addSamplesLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 46)
+        addSamplesLabel.textAlignment = NSTextAlignment.Left
+        addSamplesLabel.text = "Add Files"
+        helpView.addSubview(addSamplesLabel)
+        
+        
+        x = (width + 10) * CGFloat(2) + 60
+        y = (height + 10) * CGFloat(2.4) + 40
+        let addSamplesLabel2 = UILabel(frame: CGRectMake(x, y, width, height*1.5+10))
+        addSamplesLabel2.textColor = UIColor.whiteColor()
+        addSamplesLabel2.font = UIFont(name: "HelveticaNeue-Thin", size: 16)
+        addSamplesLabel2.textAlignment = NSTextAlignment.Left
+        addSamplesLabel2.text = "Plug the iPad into the computer and open iTunes.\n\nClick the iPad icon on the top and select 'Apps' on the left.\n\nScroll down to 'File Sharing' and select 'EasySampler'. Drag any audio file you wish.\n\nThey will appear in the list of files to add once you restart the app."
+        addSamplesLabel2.numberOfLines = 12
+        helpView.addSubview(addSamplesLabel2)
+        
+
+        let helpCloseFrame = CGRectMake(self.view.frame.width/2-helpButton.frame.width/2, self.view.frame.height-65, helpButton.frame.width, helpButton.frame.height)
+        let helpButton2:UIButton = UIButton(frame:helpCloseFrame)
+        helpButton2.setTitleColor(FlatUIColor.cloudsColor(0.7), forState: UIControlState.Normal)
+        helpButton2.layer.cornerRadius = 10
+        helpButton2.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        helpButton2.backgroundColor = FlatUIColor.pomegranateColor(0.6)
+        helpButton2.setTitle("Exit", forState: UIControlState.Normal)
+        helpButton2.addTarget(self, action: "removeHelp:", forControlEvents: UIControlEvents.TouchDown)
+        helpView.addSubview(helpButton2)
+        
+        
+        x = (width + 10) * CGFloat(0) + 20
+        y = (height + 10) * CGFloat(4) + 15 + 10
+        let signLabel = UITextView(frame: CGRectMake(x, y, width*2, height/3))
+        signLabel.textColor = UIColor.whiteColor()
+        signLabel.font = UIFont(name: "HelveticaNeue-Thin", size: 15)
+        signLabel.textAlignment = NSTextAlignment.Left
+        signLabel.text = "Copyright © 2016 Matthew Prockup. All rights reserved.\nLearn More: www.mattprockup.com"
+        signLabel.editable = false
+        signLabel.dataDetectorTypes = UIDataDetectorTypes.All
+        signLabel.backgroundColor = UIColor.clearColor()
+        helpView.addSubview(signLabel)
     }
 
     
@@ -330,20 +576,19 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
     
     // Mute button pressed callback
     func mutePressed(sender:UIButton){
-        
         if muted{
             muted = false
             muteButton.backgroundColor = FlatUIColor.pomegranateColor(0.3)
-            for (k,_) in samplesDict{
-                samplesDict[k]!.volume = soundboardSliders[k]!.value
-            }
+            muteButton.setTitleColor(FlatUIColor.cloudsColor(0.3), forState: UIControlState.Normal)
+            muteValue = 1
+            updateAllVolumes()
         }
         else{
             muted = true
             muteButton.backgroundColor = FlatUIColor.pomegranateColor(1.0)
-            for (k,_) in samplesDict{
-                samplesDict[k]!.volume = 0.0
-            }
+            muteButton.setTitleColor(FlatUIColor.cloudsColor(1.0), forState: UIControlState.Normal)
+            muteValue = 0
+            updateAllVolumes()
         }
     }
     
@@ -361,25 +606,27 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
     }
     
     //slider was touched callback
+    //Master Slider
     func sliderChanged(sender:UISlider){
-        //Master Slider
         
-        if muted == false{
-            
-            if(sender.tag==1000){
-                for (k,_) in samplesDict{
-                    samplesDict[k]?.volume = (soundboardSliders[k]?.value)! * masterVolumeSlider.value
-                }
-            }
-            else{ //Other sliders
-                let key:String = itemKeys[sender.tag]
-                if samplesDict[key] != nil {
-                    samplesDict[key]?.volume = (soundboardSliders[key]?.value)! * masterVolumeSlider.value
-                }
+        if(sender.tag==1000){
+            updateAllVolumes()
+        }
+        else{ //Other sliders
+            let key:String = itemKeys[sender.tag]
+            if samplesDict[key] != nil {
+                samplesDict[key]?.volume = (soundboardSliders[key]?.value)! * masterVolumeSlider.value * muteValue
             }
         }
         savePreset()
     }
+    
+    func updateAllVolumes(){
+        for (k,_) in samplesDict{
+            samplesDict[k]?.volume = (soundboardSliders[k]?.value)! * masterVolumeSlider.value * muteValue
+        }
+    }
+    
     
     //respond to a pressed button
     func soundButtonPressed(sender:UIButton){
@@ -416,6 +663,9 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
                 samplesDict[key]?.numberOfLoops = 0
                 isLooping[key] = false
                 setStandardColor(key)
+                if (typeSwitches[key]!.on == true) && (samplesDict[key]?.playing == true){
+                    samplesDict[key]?.stop()
+                }
             }
             else{
                 
@@ -468,7 +718,19 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
         soundboardButtons[key]?.setTitle("", forState: UIControlState.Normal)
         savePreset()
     }
-
+    
+    
+    
+    //show help overlay
+    @IBAction func helpPressed(sender: AnyObject) {
+        self.view.addSubview(helpView)
+    }
+    
+    //make help go away
+    func removeHelp(sender: AnyObject){
+        helpView.removeFromSuperview()
+    }
+    
 /////////////////////
 //MARK: Audio File Loading and Playback
 /////////////////////
@@ -501,7 +763,7 @@ class ViewController: UIViewController,UITableViewDelegate, UITableViewDataSourc
             //put filename on preview button
             var fileNameComponents = filePathToLoad.componentsSeparatedByString("/")
             self.soundboardButtons[key]?.setTitle(fileNameComponents[fileNameComponents.count - 1], forState: UIControlState.Normal)
-            self.soundboardButtons[key]?.titleLabel?.font = UIFont(name: "Helvetica-Light", size: 20)
+            self.soundboardButtons[key]?.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
             soundboardButtons[key]?.backgroundColor = FlatUIColor.nephritisColor(0.3)
 
         }
